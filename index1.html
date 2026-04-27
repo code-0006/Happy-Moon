@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery - Happy Moon Decoration</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #F0D080;
+  --gold-dark: #8B6914;
+  --black: #0A0A0A;
+  --dark: #111111;
+  --dark2: #1A1A1A;
+  --white: #FAFAFA;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--black); color:var(--white); font-family:'Noto Sans Tamil',sans-serif; }
+
+/* ═══════════════════════════════════════════════
+   GALLERY SECTION
+═══════════════════════════════════════════════ */
+.gallery-section {
+  background: var(--dark2);
+  padding: 88px 0;
+  overflow: hidden;
+}
+.gallery-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* Header */
+.section-header { text-align:center; margin-bottom:50px; }
+.section-tag {
+  display:inline-block; color:var(--gold); font-size:0.7rem;
+  letter-spacing:4px; text-transform:uppercase; margin-bottom:13px;
+  border-left:3px solid var(--gold); padding-left:12px;
+}
+.section-title { font-size:clamp(1.6rem,4vw,3rem); font-weight:800; margin-bottom:12px; }
+.section-subtitle { color:rgba(255,255,255,0.5); font-size:0.95rem; max-width:520px; margin:0 auto; line-height:1.7; }
+
+/* Filter Tabs */
+.gallery-filters {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 44px;
+}
+.filter-btn {
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 8px 22px;
+  font-size: 0.82rem;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 1px;
+  clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+  white-space: nowrap;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--black);
+  border-color: transparent;
+  font-weight: 700;
+}
+
+/* ── Masonry Grid ── */
+.gallery-masonry {
+  columns: 4;
+  column-gap: 7px;
+}
+
+/* ── Every Item (image OR video) ── */
+.gitem {
+  break-inside: avoid;
+  margin-bottom: 7px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+  display: block;
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  transition: opacity 0.55s ease, transform 0.55s ease, box-shadow 0.35s;
+  cursor: pointer;
+}
+.gitem.visible { opacity:1; transform:translateY(0) scale(1); }
+.gitem.hidden  { display:none; }
+
+.gitem:hover {
+  box-shadow: 0 14px 44px rgba(201,168,76,0.28);
+  z-index: 2;
+}
+
+/* ── Image items ── */
+.gitem img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.6s ease, filter 0.4s;
+  filter: brightness(0.88) saturate(1.1);
+  pointer-events: none;
+}
+.gitem:hover img {
+  transform: scale(1.06);
+  filter: brightness(1) saturate(1.25);
+}
+
+/* ── Video items ── */
+.gitem video {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.6s ease, filter 0.4s;
+  filter: brightness(0.88) saturate(1.1);
+  pointer-events: none;
+  background: #000;
+}
+.gitem:hover video {
+  transform: scale(1.06);
+  filter: brightness(1) saturate(1.2);
+}
+
+/* Video badge */
+.vid-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(201,168,76,0.5);
+  color: var(--gold-light);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+  border-radius: 2px;
+}
+.vid-badge svg { width:10px; height:10px; fill:var(--gold-light); flex-shrink:0; }
+
+/* Gold badge */
+.gold-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--black);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  clip-path: polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+  pointer-events: none;
+}
+
+/* ── Lightbox (fullscreen for images) ── */
+.lightbox {
+  position: fixed; inset: 0; z-index: 10000;
+  background: rgba(0,0,0,0.97);
+  display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+  animation: lbIn 0.25s ease;
+}
+@keyframes lbIn { from{opacity:0} to{opacity:1} }
+.lightbox.active { display: flex; }
+.lightbox img {
+  max-width: 92vw; max-height: 90vh;
+  object-fit: contain;
+  border: 1px solid rgba(201,168,76,0.3);
+  animation: lbScale 0.25s ease;
+}
+@keyframes lbScale { from{transform:scale(0.94)} to{transform:scale(1)} }
+.lb-close {
+  position: absolute; top: 18px; right: 22px;
+  color: var(--gold); font-size: 1.6rem; cursor: pointer;
+  width: 44px; height: 44px; border: 1px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s; background: transparent; font-family: inherit;
+}
+.lb-close:hover { background: var(--gold); color: var(--black); }
+
+/* ── Video Fullscreen Modal ── */
+.vid-modal {
+  position: fixed; inset: 0; z-index: 10001;
+  background: rgba(0,0,0,0.97);
+  display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(10px);
+  animation: lbIn 0.25s ease;
+}
+.vid-modal.active { display: flex; }
+.vid-modal-inner {
+  position: relative;
+  width: min(92vw, 960px);
+}
+.vid-modal-inner video {
+  width: 100%;
+  max-height: 85vh;
+  display: block;
+  border: 1px solid rgba(201,168,76,0.3);
+  background: #000;
+  animation: lbScale 0.25s ease;
+}
+.vm-close {
+  position: absolute; top: -50px; right: 0;
+  color: var(--gold); cursor: pointer;
+  width: 42px; height: 42px; border: 1px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; transition: all 0.3s;
+  background: transparent; font-family: inherit;
+}
+.vm-close:hover { background: var(--gold); color: var(--black); }
+
+/* ── Load More ── */
+.gallery-load-more { text-align: center; margin-top: 42px; }
+.btn-load {
+  background: transparent; color: var(--gold-light);
+  padding: 12px 38px; font-size: 0.88rem; font-weight: 600;
+  border: 2px solid var(--gold); cursor: pointer;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  transition: all 0.3s;
+  clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+}
+.btn-load:hover { background: rgba(201,168,76,0.12); box-shadow: 0 0 22px rgba(201,168,76,0.2); }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 1100px) { .gallery-masonry { columns: 3; } }
+@media (max-width: 768px) {
+  .gallery-section { padding: 56px 0; }
+  .gallery-inner { padding: 0 10px; }
+  .gallery-masonry { columns: 2; column-gap: 5px; }
+  .gitem { margin-bottom: 5px; }
+  .gallery-filters { gap: 7px; margin-bottom: 26px; }
+  .filter-btn { padding: 7px 13px; font-size: 0.75rem; }
+  .vid-modal-inner { width: 95vw; }
+  .vm-close { top: -44px; }
+}
+@media (max-width: 420px) {
+  .gallery-masonry { columns: 2; column-gap: 4px; }
+  .filter-btn { padding: 6px 10px; font-size: 0.7rem; }
+}
+</style>
+</head>
+<body>
+
+<section class="gallery-section" id="gallery">
+  <div class="gallery-inner">
+
+    <!-- Section Header -->
+    <div class="section-header">
+      <div class="section-tag">எங்கள் படைப்புகள்</div>
+      <h2 class="section-title">அழகின் தொகுப்பு</h2>
+      <p class="section-subtitle">ஒவ்வொரு படமும் ஒரு கதை சொல்கிறது — அழகான நிகழ்வுகளின் நினைவுகள்</p>
+    </div>
+
+    <!-- Filter Tabs — Images & Videos only -->
+    <div class="gallery-filters">
+      <button class="filter-btn active" data-filter="all">அனைத்தும்</button>
+      <button class="filter-btn" data-filter="image">Images</button>
+      <button class="filter-btn" data-filter="video">Videos</button>
+    </div>
+
+    <!-- MASONRY GRID -->
+    <div class="gallery-masonry" id="galleryGrid">
+
+      <!-- ── 1. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/f_auto,q_auto/pexels-thevisionaryvows-32994477_pogonm" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 2. VIDEO ── -->
+      <div class="gitem video-item" data-cat="video" onclick="openVid(this)">
+        <video muted loop playsinlin preload="metadata"
+            poster="உங்கள்-video-thumbnail-1.jpg"
+            controls>
+        <source src="https://res.cloudinary.com/dy60jaw5v/video/upload/v1234567890/11_frhjcv.mp4" type="video/mp4">
+        </video>
+        <span class="vid-badge">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          Video
+        </span>
+      </div>
+
+      <!-- ── 3. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280702/jon-tyson-CP68p1fZS8k-unsplash_fhcnlj.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 4. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280699/fujiphilm-KMNZgMsedE0-unsplash_bhvqe5.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 5. VIDEO ── -->
+      <div class="gitem video-item" data-cat="video" onclick="openVid(this)">
+        <video muted loop playsinline preload="metadata"
+               poster="உங்கள்-video-thumbnail-2.jpg"
+               controls>
+          <source src="https://res.cloudinary.com/dy60jaw5v/video/upload/v1234567890/22_brqdaf.mp4" type="video/mp4">
+        </video>
+        <span class="vid-badge">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          Video
+        </span> 
+      </div>
+
+      <!-- ── 6. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280693/pexels-justinagyarko-34260120_yifnvd.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 7. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280690/shardayyy-photography-fJzmPe-a0eU-unsplash_bflhep.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 8. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280688/pexels-vidalbalielojrfotografia-20016145_pzd1no.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 9. VIDEO ── -->
+      <div class="gitem video-item" data-cat="video" onclick="openVid(this)">
+        <video muted loop playsinline preload="metadata"
+               poster="உங்கள்-video-thumbnail-3.jpg">
+          <source src="https://res.cloudinary.com/dy60jaw5v/video/upload/v1234567890/33_sdvkwb.mp4" type="video/mp4">
+        </video>
+        <span class="vid-badge">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          Video
+        </span>
+      </div>
+
+      <!-- ── 10. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280686/onkar-singh-D31ZvQgI9z8-unsplash_hzrytu.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 11. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280685/tanya-barrow-bSEPMf39pWM-unsplash_dpgacf.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 12. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280685/pexels-luis-angel-alejos-espinoza-538962425-17840129_bvqyhr.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 13. VIDEO ── -->
+      <div class="gitem video-item" data-cat="video" onclick="openVid(this)">
+        <video muted loop playsinline preload="metadata"
+               poster="உங்கள்-video-thumbnail-4.jpg">
+          <source src="https://res.cloudinary.com/dy60jaw5v/video/upload/v1234567890/download_j6cinx.mp4" type="video/mp4">
+        </video>
+        <span class="vid-badge">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          Video
+        </span>
+      </div>
+
+      <!-- ── 14. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280683/ami-lisk-t-A3ogopWv8-unsplash_e9rr5c.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 15. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280682/amish-thakkar-BEdxXAiRfRM-unsplash_popzqt.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 16. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280678/masood-aslami-CWKjTRWcPlw-unsplash_hjrqcw.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 17. VIDEO ── -->
+      <div class="gitem video-item" data-cat="video" onclick="openVid(this)">
+        <video muted loop playsinline preload="metadata"
+               poster="உங்கள்-video-thumbnail-5.jpg">
+          <source src="https://res.cloudinary.com/dy60jaw5v/video/upload/v1234567890/44_vangyk.mp4" type="video/mp4">
+        </video>
+        <span class="vid-badge">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          Video
+        </span>
+      </div>
+
+      <!-- ── 18. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280672/vishnu-prasad-CFB4YIkz_lY-unsplash_na8qpt.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 19. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280668/zain-raza-0Oo13ZSmm8o-unsplash_kjxanx.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+      <!-- ── 20. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280663/fabio-guntur-qG2yK_iNspE-unsplash_gxna5i.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+       <!-- ── 21. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280653/teodora-popa-K1SbgOz7QAg-unsplash_fdt4ep.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+       <!-- ── 22. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280648/rebecca-clarke-UtEEeokBj8o-unsplash_caekoo.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+       <!-- ── 23. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280637/photographycourse-xXKSbHqzfRQ-unsplash_udyxzs.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+       <!-- ── 24. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280636/note-thanun-xCCWAxAzUFo-unsplash_ipt9w8.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+       <!-- ── 25. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280627/jose-marroquin-FXtDyXJEWB4-unsplash_ccy7eu.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+       <!-- ── 26. IMAGE ── -->
+      <div class="gitem" data-cat="image" onclick="openImg(this)">
+        <img src="https://res.cloudinary.com/dy60jaw5v/image/upload/v1777280625/kinjal-sanchaniya-0MhBX-_UBLg-unsplash_1_pwgvr8.jpg" alt="Happy Moon Decoration" loading="lazy">
+      </div>
+
+    </div>
+    <!-- end gallery-masonry -->
+
+    <!-- Load More -->
+    <div class="gallery-load-more">
+      <button class="btn-load" id="loadMoreBtn">
+        மேலும் படங்கள் — WhatsApp-ல் தொடர்பு கொள்ளுங்கள் →
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- Image Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLB(event)">
+  <button class="lb-close" onclick="closeLB()">✕</button>
+  <img id="lbImg" src="" alt="Happy Moon Decoration">
+</div>
+
+<!-- Video Fullscreen Modal -->
+<div class="vid-modal" id="vidModal" onclick="closeVid(event)">
+  <div class="vid-modal-inner">
+    <button class="vm-close" onclick="closeVid()">✕</button>
+    <video id="modalVideo" controls playsinline>
+      <source src="" type="video/mp4">
+    </video>
+  </div>
+</div>
+
+<script>
+// ── Staggered scroll reveal ──
+(function() {
+  const grid = document.getElementById('galleryGrid');
+  if (!grid) return;
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const items = e.target.querySelectorAll('.gitem');
+      items.forEach((item, i) => {
+        setTimeout(() => item.classList.add('visible'), i * 70);
+      });
+      setTimeout(autoplayVisible, items.length * 70 + 200);
+      io.unobserve(e.target);
+    });
+  }, { threshold: 0.04 });
+  io.observe(grid);
+
+  const itemIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        itemIO.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  grid.querySelectorAll('.gitem').forEach(item => itemIO.observe(item));
+})();
+
+// ── Autoplay visible videos ──
+function autoplayVisible() {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      const video = e.target.querySelector('video');
+      if (!video) return;
+      if (e.isIntersecting) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.gitem.video-item').forEach(item => {
+    observer.observe(item);
+  });
+}
+
+// ── Filter tabs — image / video / all ──
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const filter = this.dataset.filter;
+
+    document.querySelectorAll('.gitem').forEach((item, i) => {
+      const cat = item.dataset.cat || '';
+      const show = filter === 'all' || cat === filter;
+      if (show) {
+        item.classList.remove('hidden');
+        setTimeout(() => item.classList.add('visible'), i * 50);
+      } else {
+        item.classList.add('hidden');
+        item.classList.remove('visible');
+        const v = item.querySelector('video');
+        if (v) v.pause();
+      }
+    });
+
+    setTimeout(autoplayVisible, 500);
+  });
+});
+
+// ── Open image lightbox ──
+function openImg(el) {
+  const img = el.querySelector('img');
+  if (!img) return;
+  document.getElementById('lbImg').src = img.src;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// ── Close image lightbox ──
+function closeLB(e) {
+  if (!e || e.target === document.getElementById('lightbox') ||
+      e.target.classList.contains('lb-close')) {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// ── Open video fullscreen modal ──
+function openVid(el) {
+  const thumbVid = el.querySelector('video');
+  if (!thumbVid) return;
+  const src = thumbVid.querySelector('source')?.src || '';
+  const modalVid = document.getElementById('modalVideo');
+  modalVid.querySelector('source').src = src;
+  modalVid.load();
+  modalVid.play().catch(() => {});
+  document.getElementById('vidModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  thumbVid.pause();
+}
+
+// ── Close video modal ──
+function closeVid(e) {
+  if (!e || e.target === document.getElementById('vidModal') ||
+      e.target.classList.contains('vm-close')) {
+    const modalVid = document.getElementById('modalVideo');
+    modalVid.pause();
+    modalVid.querySelector('source').src = '';
+    modalVid.load();
+    document.getElementById('vidModal').classList.remove('active');
+    document.body.style.overflow = '';
+    setTimeout(autoplayVisible, 300);
+  }
+}
+
+// ── Keyboard close ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeLB(); closeVid(); }
+});
+
+// ── Load More → WhatsApp ──
+document.getElementById('loadMoreBtn')?.addEventListener('click', () => {
+  window.open('https://wa.me/94743745875?text=மேலும் படங்கள் காண விரும்புகிறேன்', '_blank');
+});
+
+window.addEventListener('load', () => setTimeout(autoplayVisible, 500));
+</script>
+
+</body>
+</html>
